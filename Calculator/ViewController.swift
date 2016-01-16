@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var operandStack = [String]()
     var sumInDisplay = false
     var operatorJustUsed = false
+    let brain = CalculatorBrain()
 
 
     @IBAction func appendDigit(sender: UIButton) {
@@ -24,18 +25,18 @@ class ViewController: UIViewController {
         if userIsInTheMiddleOfTypingANumber {
             display.text = display.text! + digit
         
-            if operandStack.count > 0 && operatorJustUsed == false {
-                operandStack.append("\(operandStack.removeLast())" + "\(digit)")
+            if brain.operandStackCount() > 0 && operatorJustUsed == false {
+                brain.appendCurrentlyPressedPlusDisplay(digit)
             }
             else {
-                operandStack.append(digit)
+                brain.appendStack(digit)
                 operatorJustUsed = false
             }
         }
         else {
             display.text = digit
             userIsInTheMiddleOfTypingANumber = true
-            operandStack.append(digit)
+            brain.appendStack(digit)
             
         }
     }
@@ -46,92 +47,26 @@ class ViewController: UIViewController {
         operatorJustUsed = true
         if userIsInTheMiddleOfTypingANumber {
             display.text = display.text! + sign
-            operandStack.append(sign)
+            brain.appendStack(sign)
         }
         else if sumInDisplay {
             display.text = display.text! + sign
-            operandStack.append(sign)
+            brain.appendStack(sign)
             userIsInTheMiddleOfTypingANumber = true
         }
     }
     
     @IBAction func enter() {
         sumInDisplay = true
-        println("stack = \(operandStack)")
-        var total: Double = 0
-        var i = 0
-        while contains(operandStack, "✖️") {
-            switch operandStack[i] {
-            case "✖️":
-                total = NSNumberFormatter().numberFromString(operandStack[i-1])!.doubleValue * NSNumberFormatter().numberFromString(operandStack[i+1])!.doubleValue
-                operandStack.removeRange(i-1...i)
-                if operandStack.count > 2 {
-                    operandStack[i-1] = "\(total)"
-                }
-                
-                i = 0
-                println("stack = \(operandStack)")
-            default: break
-            }
-            i++
-        }
-        while contains(operandStack, "➗") {
-            switch operandStack[i] {
-            case "➗":
-                total = NSNumberFormatter().numberFromString(operandStack[i-1])!.doubleValue / NSNumberFormatter().numberFromString(operandStack[i+1])!.doubleValue
-                operandStack.removeRange(i-1...i)
-                if operandStack.count > 2 {
-                    operandStack[i-1] = "\(total)"
-                }
-                
-                i = 0
-                println("stack = \(operandStack)")
-            default: break
-            }
-            i++
-        }
-        while contains(operandStack, "➕") {
-            switch operandStack[i] {
-            case "➕":
-                total = NSNumberFormatter().numberFromString(operandStack[i-1])!.doubleValue + NSNumberFormatter().numberFromString(operandStack[i+1])!.doubleValue
-                operandStack.removeRange(i-1...i)
-                if operandStack.count > 2 {
-                    operandStack[i-1] = "\(total)"
-                }
-
-                i = 0
-                println("stack = \(operandStack)")
-            default: break
-            }
-            i++
-        }
-        while contains(operandStack, "➖") {
-            switch operandStack[i] {
-            case "➖":
-                total = NSNumberFormatter().numberFromString(operandStack[i-1])!.doubleValue - NSNumberFormatter().numberFromString(operandStack[i+1])!.doubleValue
-                operandStack.removeRange(i-1...i)
-                if operandStack.count > 2 {
-                    operandStack[i-1] = "\(total)"
-                }
-                
-                i = 0
-                println("stack = \(operandStack)")
-            default: break
-            }
-            i++
-        }
-
-        display.text = "\(total)"
-        operandStack = []
-        operandStack.append("\(total)")
         userIsInTheMiddleOfTypingANumber = false
-        println("stack = \(operandStack)")
+        display.text = "\(brain.calculate()!)"
     }
     
     @IBAction func clear() {
         userIsInTheMiddleOfTypingANumber = false
-        operandStack = []
+        brain.clear()
         display.text = "0"
+        
     }
 }
 
